@@ -131,7 +131,16 @@
   .unit { margin: 0; font-family: var(--f-display); font-size: 20px; font-weight: 800; line-height: 1.35; }
   .notice { display: inline-block; font-size: 12px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 4px; padding: 0 8px; margin-right: 6px; }
   .venue { font-size: 14px; color: var(--ink-2); }
-  .venue a { color: var(--ink-2); text-decoration-color: var(--line); text-underline-offset: 3px; }
+  .venue { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: baseline; }
+  .vname { font-weight: 700; color: var(--ink); }
+  .vaddr { font-size: 13px; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .linkbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-size: 14px; font-weight: 700; text-decoration: none; }
+  .linkbtn:hover { background: var(--accent); color: var(--accent-ink); }
+  .linkbtn:active { transform: translateY(1px); }
+  .linkbtn .ico { width: 18px; height: 18px; color: var(--accent); flex: none; }
+  .linkbtn:hover .ico { color: inherit; }
+  .linkbtn .ext { font-size: 12px; opacity: .7; }
   .label { font-size: 11.5px; letter-spacing: .14em; color: var(--ink-3); font-weight: 700; }
   .speakers { display: grid; gap: 6px; }
   .spk { display: flex; flex-wrap: wrap; gap: 0 10px; align-items: baseline; }
@@ -525,8 +534,13 @@
             el("h3", { class: "unit", text: e.unit }),
             el("div", { class: "venue" },
               e.notice ? el("span", { class: "notice", text: e.notice }) : null,
-              el("a", { href: `https://www.google.com/maps/search/?api=1&query=${mapQ}`, target: "_blank", rel: "noopener" }, e.venue),
-              e.address ? `（${e.address}）` : "")),
+              el("span", { class: "vname", text: e.venue }),
+              e.address ? el("span", { class: "vaddr", text: e.address }) : null),
+            el("div", { class: "links" },
+              el("a", { class: "linkbtn", href: `https://www.google.com/maps/search/?api=1&query=${mapQ}`, target: "_blank", rel: "noopener" },
+                icon("M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"), "地図を開く", el("span", { class: "ext", text: "↗" })),
+              el("a", { class: "linkbtn", href: gcalUrl(e), target: "_blank", rel: "noopener" },
+                icon("M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm-2 8h14v10H5V10zm7 2v3H9v2h3v3h2v-3h3v-2h-3v-3h-2z"), "Googleカレンダーに登録", el("span", { class: "ext", text: "↗" })))),
           tools),
         el("div", { class: "speakers" },
           el("span", { class: "label", text: "講話" }),
@@ -565,6 +579,32 @@
   async function delMsg(x) {
     try { await state.db.doc("messages/" + x.id).delete(); toast("メッセージを削除しました"); }
     catch (err) { writeFailed(err); }
+  }
+
+  // ---- link helpers ----
+  function icon(d) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("class", "ico");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d); path.setAttribute("fill", "currentColor"); svg.append(path);
+    return svg;
+  }
+  function gcalUrl(e) {
+    const ymdC = e.date.replace(/-/g, "");
+    let dates;
+    if (e.time) {
+      const [h, mi] = e.time.split(":").map(Number);
+      const end = h * 60 + mi + 60; // 1時間の予定として登録（Googleカレンダー側で変更可）
+      const hm = (t) => `${pad(Math.floor(t / 60) % 24)}${pad(t % 60)}00`;
+      dates = `${ymdC}T${hm(h * 60 + mi)}/${ymdC}T${hm(end)}`;
+    } else {
+      const d = parseDate(e.date); d.setDate(d.getDate() + 1);
+      dates = `${ymdC}/${ymd(d).replace(/-/g, "")}`;
+    }
+    const spk = (e.speakers || []).map(x => x.name + " 氏" + (x.title ? `（${x.title}）` : "")).join("\n");
+    const details = [`講話：\n${spk}`, e.notice ? `※${e.notice}` : "", e.note || "", "応援メッセージはこちら：https://claude.ai/artifact/GCe64RuSzaueWQyv4hSy5C"].filter(Boolean).join("\n\n");
+    const q = new URLSearchParams({ action: "TEMPLATE", text: `${e.unit} モーニングセミナー`, dates, ctz: "Asia/Tokyo", details, location: [e.venue, e.address].filter(Boolean).join(" ") });
+    return "https://calendar.google.com/calendar/render?" + q.toString();
   }
 
   // ---- bulk copy for LINE ----
