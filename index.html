@@ -96,12 +96,10 @@
   .day.has { background: var(--accent-soft); border-color: var(--accent); cursor: pointer; }
   .day.has:hover { filter: brightness(.98); }
   .day .tag { font-size: 11px; line-height: 1.3; font-weight: 700; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .day .cnt { margin-top: auto; font-size: 10.5px; color: var(--ink-2); font-family: var(--f-mono); }
   .day.today { border-color: var(--ink-3); border-style: dashed; }
   @media (max-width: 560px) {
     .day { min-height: 52px; padding: 3px; }
     .day .tag { font-size: 9.5px; -webkit-line-clamp: 2; }
-    .day .cnt { display: none; }
   }
 
   /* events */
@@ -150,8 +148,6 @@
 
   .section { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 10px; }
   .section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .count { font-family: var(--f-mono); font-size: 13px; color: var(--ink-2); }
-  .count b { font-size: 18px; color: var(--go); }
   .attendees { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--go-soft); font-size: 13.5px; }
   .chip button { border: 0; background: transparent; padding: 0 2px; color: var(--ink-3); font-size: 14px; line-height: 1; }
@@ -187,7 +183,7 @@
   .toggle { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
   .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .bars .mhead { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; color: var(--ink-3); padding: 6px 2px 0; }
-  .bar { width: 100%; display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: stretch; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-align: left; padding: 0; box-shadow: var(--shadow); }
+  .bar { width: 100%; display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: stretch; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-align: left; padding: 0; box-shadow: var(--shadow); }
   .bar:hover { border-color: var(--accent); }
   .bar .bd { background: var(--ink); color: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 8px 4px; line-height: 1.2; }
   .bar .bd b { font-family: var(--f-display); font-size: 22px; font-weight: 800; }
@@ -198,11 +194,8 @@
   .bar .bu { font-weight: 700; font-size: 15.5px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .bar .bu .nx { font-size: 11px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; }
   .bar .bs, .bar .bv { font-size: 12.5px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar .bc { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 8px 14px; border-left: 1px solid var(--line); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
-  .bar .bc b { font-family: var(--f-mono); font-size: 15px; color: var(--ink); }
   @media (max-width: 560px) {
     .bar { grid-template-columns: 64px minmax(0, 1fr); }
-    .bar .bc { grid-column: 2; flex-direction: row; gap: 12px; border-left: 0; padding: 0 12px 8px; }
     .bar .bd b { font-size: 19px; }
   }
   details.cal > summary { cursor: pointer; font-family: var(--f-display); font-weight: 800; font-size: 18px; }
@@ -290,7 +283,7 @@
     db: null, uid: null, admin: false, canWrite: true,
     events: [], rsvps: [], messages: [],
     month: null, filter: {}, copyOpen: {}, // eventId -> speaker name filter
-    editing: null, confirmDel: null, loaded: false,
+    editing: null, loaded: false,
   };
 
   // ---- small helpers ----
@@ -381,11 +374,9 @@
       const evs = state.events.filter(e => e.date === ds);
       const cls = ["day", dow === 0 ? "sun" : dow === 6 ? "sat" : "", evs.length ? "has" : "", ds === todayStr ? "today" : ""].join(" ");
       if (evs.length) {
-        const cnt = evs.reduce((a, e) => a + state.rsvps.filter(r => r.eventId === e.id).length, 0);
         g.append(el("button", { class: cls, type: "button", "aria-label": `${m}月${d}日 ${evs.map(e => e.unit).join("、")}`, onclick: () => jumpTo(evs[0].id) },
           el("span", { class: "n", text: d }),
-          evs.map(e => el("span", { class: "tag", text: (e.unit || "").replace(/\s*倫理法人会$/, "") })),
-          el("span", { class: "cnt", text: `参加 ${cnt}` })));
+          evs.map(e => el("span", { class: "tag", text: (e.unit || "").replace(/\s*倫理法人会$/, "") }))));
       } else {
         g.append(el("div", { class: cls }, el("span", { class: "n", text: d })));
       }
@@ -415,8 +406,6 @@
       const d = parseDate(e.date);
       const mKey = e.date.slice(0, 7);
       if (mKey !== lastM) { items.push(el("li", { class: "mhead", text: `${d.getFullYear()}年${d.getMonth() + 1}月` })); lastM = mKey; }
-      const nR = state.rsvps.filter(r => r.eventId === e.id).length;
-      const nM = state.messages.filter(x => x.eventId === e.id).length;
       const spk = (e.speakers || []).map(x => x.name + " 氏").join("／");
       const isNext = next && next.id === e.id;
       items.push(el("li", {}, el("button", { type: "button", class: "bar" + (isNext ? " next" : "") + (e.date < todayStr ? " past" : ""), onclick: () => jumpTo(e.id) },
@@ -424,8 +413,7 @@
         el("span", { class: "bm" },
           el("span", { class: "bu" }, e.unit, isNext ? el("span", { class: "nx", text: "次回" }) : null, e.notice ? el("span", { class: "notice", text: e.notice }) : null),
           el("span", { class: "bs", text: "講話：" + spk }),
-          el("span", { class: "bv", text: "会場：" + e.venue })),
-        el("span", { class: "bc" }, el("span", {}, "参加 ", el("b", { text: nR }), " 名"), el("span", {}, "応援 ", el("b", { text: nM }), " 件")))));
+          el("span", { class: "bv", text: "会場：" + e.venue })))));
     }
     if (!list.length) items.push(el("li", { class: "empty", text: "これからの予定はまだありません。" + (state.admin ? "下の「予定を追加する」から入力できます。" : "") }));
     if (state.admin) items.push(el("li", {}, el("button", { type: "button", class: "btn small", onclick: () => $("#adminBox").scrollIntoView({ behavior: "smooth", block: "start" }) }, "＋ 予定を追加する（運営者）")));
@@ -466,11 +454,7 @@
 
     // admin tools
     const tools = state.admin ? el("div", { class: "row" },
-      el("button", { class: "btn small", type: "button", onclick: () => startEdit(e) }, "編集"),
-      state.confirmDel === e.id
-        ? [el("button", { class: "btn small danger", type: "button", onclick: () => delEvent(e) }, "本当に削除"),
-           el("button", { class: "btn small", type: "button", onclick: () => { state.confirmDel = null; render(); } }, "やめる")]
-        : el("button", { class: "btn small danger", type: "button", onclick: () => { state.confirmDel = e.id; render(); } }, "削除")
+      el("button", { class: "btn small", type: "button", onclick: () => startEdit(e) }, "編集")
     ) : null;
 
     // attendance
@@ -478,7 +462,7 @@
     const attend = el("div", { class: "section" },
       el("div", { class: "section-head" },
         el("span", { class: "label", text: "参加予定" }),
-        el("span", { class: "count" }, el("b", { text: rs.length }), " 名")),
+),
       rs.length ? el("div", { class: "attendees" }, rs.map(r => el("span", { class: "chip" }, r.name,
         (r.uid && r.uid === state.uid) || state.admin
           ? el("button", { type: "button", title: "参加を取り消す", "aria-label": `${r.name} の参加を取り消す`, onclick: () => cancelRsvp(r), disabled: ro }, "×") : null)))
@@ -501,7 +485,6 @@
       el("div", { class: "section-head" },
         el("span", { class: "label", text: "応援メッセージ" }),
         el("span", { class: "row" },
-          el("span", { class: "count" }, el("b", { text: ms.length, style: "color:var(--accent)" }), " 件"),
           ms.length ? el("button", { type: "button", class: "btn small", onclick: () => copyCheers(e, ms) }, "一括コピー（LINE用）") : null)),
       copyText ? el("div", { class: "copybox" },
         el("span", { class: "hint", text: "自動でコピーできませんでした。下の文章を長押し（または Ctrl+C）でコピーしてください。" }),
@@ -624,7 +607,6 @@
       lines.push("", `▼ ${head}`);
       for (const x of g) lines.push("", `「${x.text}」`, `　― ${x.from}`);
     }
-    lines.push("", `（全${list.length}件）`);
     return lines.join("\n");
   }
   function copyCheers(e, ms) {
@@ -632,7 +614,7 @@
     const fallback = () => { state.copyOpen[e.id] = true; render(); const t = document.querySelector(`#ev-${e.id} .copytext`); if (t) { t.focus(); t.select(); } };
     try {
       navigator.clipboard.writeText(text)
-        .then(() => { delete state.copyOpen[e.id]; toast(`${ms.length}件コピーしました。LINEに貼り付けできます`); render(); })
+        .then(() => { delete state.copyOpen[e.id]; toast("コピーしました。LINEに貼り付けできます"); render(); })
         .catch(fallback);
     } catch { fallback(); }
   }
@@ -680,14 +662,6 @@
     } catch (err) { writeFailed(err); }
     finally { F("fSave").disabled = false; }
   });
-  async function delEvent(e) {
-    state.confirmDel = null;
-    try {
-      await state.db.doc("events/" + e.id).delete();
-      toast("予定を削除しました");
-    } catch (err) { writeFailed(err); }
-  }
-
   // ---- boot ----
   state.month = todayStr.slice(0, 7);
   render();
