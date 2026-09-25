@@ -1,9 +1,4 @@
-<!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
 <title>青年委員 応援カレンダー</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="倫理法人会 講話・モーニングセミナーの予定共有、参加表明、登壇者への応援メッセージ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,8 +32,6 @@
   }
 
   * { box-sizing: border-box; }
-  [hidden] { display: none !important; }
-  html, body { margin: 0; }
   body { border-top: 4px solid var(--accent); }
   body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.7; }
   .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; padding-block: 24px 64px; display: grid; gap: 28px; }
@@ -58,7 +51,7 @@
   .pill.live .dot { background: var(--go); }
 
 
-  input[type=text], input[type=email], input[type=date], input[type=time], textarea, select {
+  input[type=text], input[type=date], input[type=time], textarea, select {
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0;
   }
   textarea { resize: vertical; width: 100%; }
@@ -160,8 +153,6 @@
   .compose { display: grid; gap: 8px; background: var(--bg); border-radius: 10px; padding: 10px; }
   .compose .row select { flex: 1 1 10em; }
   .hint { font-size: 12px; color: var(--ink-3); }
-  .rsvp-form { display: grid; gap: 8px; }
-  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
   .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 14px; box-shadow: var(--shadow); z-index: 10; max-width: calc(100% - 32px); }
   footer { font-size: 12px; color: var(--ink-3); }
@@ -191,8 +182,6 @@
   .copybox { display: grid; gap: 6px; }
   .copybox textarea { font-size: 13px; }
 </style>
-</head>
-<body>
 
 <div class="wrap">
   <header class="top">
@@ -201,7 +190,7 @@
       <h1>講話・モーニングセミナー<br><span class="sun">応援</span>カレンダー</h1>
     </div>
     <div style="display:grid; gap:8px; justify-items:start;">
-      <div class="status" id="status"><span class="pill" id="conn"><span class="dot"></span>読み込み中…</span></div>
+      <div class="status" id="status"><span class="pill" id="conn"><span class="dot"></span>接続中…</span></div>
     </div>
   </header>
 
@@ -236,19 +225,16 @@
   </details>
 
 
-  <footer>参加表明と応援メッセージはこのページを開いた全員に共有されます。名前は本名またはニックネームでどうぞ。メールアドレスはリマインドの送信にだけ使い、ページには表示しません。</footer>
+  <footer>参加表明と応援メッセージはこのページを開いた全員に共有されます。名前は本名またはニックネームでどうぞ。</footer>
 </div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="config.js"></script>
 <script>
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const WD = ["日","月","火","水","木","金","土"];
-  const API = (window.SEINEN_API_URL || "").trim();
-  const PAGE_URL = location.href.split("#")[0];
   const state = {
-    busy: false, lastLoad: 0,
+    db: null, uid: null, canWrite: true,
     events: [], rsvps: [], messages: [],
     month: null, filter: {}, copyOpen: {}, // eventId -> speaker name filter
     loaded: false,
@@ -289,36 +275,16 @@
   function fmtTime(ms) {
     const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
-  // 自分が登録・投稿したもの（取り消し用の鍵）をこの端末に覚えておく
-  function ownKeys() { try { return JSON.parse(store.get("seinen.keys") || "{}"); } catch { return {}; } }
-  function saveKey(id, key) { const k = ownKeys(); k[id] = key; store.set("seinen.keys", JSON.stringify(k)); }
-  function dropKey(id) { const k = ownKeys(); delete k[id]; store.set("seinen.keys", JSON.stringify(k)); }
-  const isMine = id => !!ownKeys()[id];
-
-  const ERR = {
-    duplicate: "同じ名前で参加登録済みです",
-    bad_email: "メールアドレスの形式を確認してください",
-    no_name: "名前を入力してください",
-    empty: "名前とメッセージを入力してください",
-    no_event: "この予定は見つかりませんでした。ページを再読み込みしてください",
-    forbidden: "この端末から登録したものだけ取り消せます",
-    not_found: "すでに削除されています",
-    busy: "混み合っています。少し待ってからもう一度お試しください",
-  };
-  async function post(payload) {
-    state.busy = true; render();
-    try {
-      // text/plain で送ると Apps Script に直接届く（CORS の事前確認が不要）
-      const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
-      const data = await res.json();
-      if (!data.ok) { toast(ERR[data.error] || "保存できませんでした。もう一度お試しください"); return null; }
-      return data;
-    } catch (err) {
-      console.error(err);
+  function writeFailed(e) {
+    console.error(e);
+    if (e && e.code === "invalid_argument") {
+      state.canWrite = false;
+      banner("書き込み権限がありません。運営者に「Contributor（参加者）」以上の共有設定を依頼してください。");
+      render();
+    } else if (e && e.code === "quota_exceeded") {
+      toast("保存容量の上限に達しました。運営者に連絡してください");
+    } else {
       toast("保存できませんでした。通信状況を確認してもう一度お試しください");
-      return null;
-    } finally {
-      state.busy = false;
     }
   }
 
@@ -432,29 +398,25 @@
     const speakers = Array.isArray(e.speakers) ? e.speakers : [];
     const past = e.date < todayStr;
     const name = myName();
-    const mine = rs.some(r => isMine(r.id));
-    const ro = !API || state.busy;
+    const mine = rs.some(r => r.uid && r.uid === state.uid);
+    const ro = !state.canWrite || !state.db;
 
     const mapQ = encodeURIComponent([e.venue, e.address].filter(Boolean).join(" "));
 
     // attendance
-    const nameInp = el("input", { type: "text", id: "rsvp-" + e.id, maxlength: "30", placeholder: "参加する人の名前", value: name, "aria-label": "参加する人の名前", disabled: ro });
-    const mailInp = el("input", { type: "email", id: "mail-" + e.id, maxlength: "120", placeholder: "メールアドレス（任意）", value: store.get("seinen.email") || "", "aria-label": "メールアドレス（任意）", autocomplete: "email", disabled: ro });
+    const nameInp = el("input", { type: "text", id: "rsvp-" + e.id, maxlength: "30", placeholder: "参加する人の名前", value: name, disabled: ro });
     const attend = el("div", { class: "section" },
       el("div", { class: "section-head" },
         el("span", { class: "label", text: "参加予定" }),
 ),
       rs.length ? el("div", { class: "attendees" }, rs.map(r => el("span", { class: "chip" }, r.name,
-        isMine(r.id)
+        r.uid && r.uid === state.uid
           ? el("button", { type: "button", title: "参加を取り消す", "aria-label": `${r.name} の参加を取り消す`, onclick: () => cancelRsvp(r), disabled: ro }, "×") : null)))
         : el("span", { class: "hint", text: "まだ参加表明はありません。一番乗りでどうぞ。" }),
       past ? el("span", { class: "hint", text: "この回は終了しました。" }) :
-      el("form", { class: "rsvp-form", onsubmit: ev => { ev.preventDefault(); addRsvp(e, live(nameInp).value.trim(), live(mailInp).value.trim(), ev.target); } },
-        el("div", { class: "row" }, nameInp, mailInp),
-        el("input", { type: "text", name: "website", class: "hp", tabindex: "-1", autocomplete: "off", "aria-hidden": "true" }),
-        el("div", { class: "row" },
-          el("button", { class: "btn go", type: "submit", disabled: ro }, mine ? "もう1名 参加する" : "参加する"),
-          el("span", { class: "hint", text: "メールを入れると、前日にリマインドが届きます" }))));
+      el("form", { class: "row", onsubmit: ev => { ev.preventDefault(); addRsvp(e, live(nameInp).value.trim()); } },
+        nameInp,
+        el("button", { class: "btn go", type: "submit", disabled: ro }, mine ? "もう1名 参加する" : "参加する")));
 
     // messages
     const f = state.filter[e.id] || "";
@@ -481,11 +443,10 @@
         el("span", { class: "to", text: (x.to ? x.to + " 氏へ" : (speakers.length === 1 ? speakers[0].name + " 氏へ" : "登壇者の皆さんへ")) }),
         el("p", { text: x.text }),
         el("span", { class: "from" }, el("span", {}, `${x.from}　`, el("span", { style: "font-family:var(--f-mono)", text: fmtTime(x.createdAt) })),
-          isMine(x.id) ? el("button", { type: "button", onclick: () => delMsg(x), disabled: ro }, "削除") : null))))
+          x.uid && x.uid === state.uid ? el("button", { type: "button", onclick: () => delMsg(x), disabled: ro }, "削除") : null))))
         : el("span", { class: "hint", text: "最初の応援メッセージを送ってみましょう。" }),
-      el("form", { class: "compose", onsubmit: ev => { ev.preventDefault(); sendMsg(e, live(sel).value, live(ta), live(fromInp), ev.target); } },
+      el("form", { class: "compose", onsubmit: ev => { ev.preventDefault(); sendMsg(e, live(sel).value, live(ta), live(fromInp)); } },
         el("div", { class: "row" }, sel, fromInp),
-        el("input", { type: "text", name: "website", class: "hp", tabindex: "-1", autocomplete: "off", "aria-hidden": "true" }),
         ta,
         el("div", { class: "row" }, el("button", { class: "btn primary", type: "submit", disabled: ro }, "応援を送る"),
           el("span", { class: "hint", text: "メッセージと名前が掲示板に表示されます" }))));
@@ -517,44 +478,35 @@
   }
 
   // ---- writes ----
-  const hp = form => (form && form.querySelector('[name="website"]') || {}).value || "";
-  async function addRsvp(e, name, email, form) {
+  async function addRsvp(e, name) {
     const rs = state.rsvps.filter(r => r.eventId === e.id);
     if (!name) { toast("名前を入力してください"); return; }
     if (rs.some(r => r.name === name)) { toast(`${name} さんは参加登録済みです`); return; }
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast("メールアドレスの形式を確認してください"); return; }
     store.set("seinen.name", name);
-    if (email) store.set("seinen.email", email);
-    const res = await post({ action: "rsvp", eventId: e.id, name, email, website: hp(form) });
-    if (res && res.id) {
-      saveKey(res.id, res.key);
-      toast(`${name} さんの参加を登録しました` + (email ? "（前日にメールが届きます）" : ""));
-    }
-    await load();
+    try {
+      await state.db.collection("rsvps").add({ eventId: e.id, name, uid: state.uid || "", createdAt: Date.now() });
+      toast(`${name} さんの参加を登録しました`);
+    } catch (err) { writeFailed(err); }
   }
   async function cancelRsvp(r) {
-    const res = await post({ action: "cancelRsvp", id: r.id, key: ownKeys()[r.id] });
-    if (res) { dropKey(r.id); toast(`${r.name} さんの参加を取り消しました`); }
-    await load();
+    try { await state.db.doc("rsvps/" + r.id).delete(); toast(`${r.name} さんの参加を取り消しました`); }
+    catch (err) { writeFailed(err); }
   }
-  async function sendMsg(e, to, ta, fromInp, form) {
+  async function sendMsg(e, to, ta, fromInp) {
     const from = fromInp.value.trim();
     if (!from) { toast("書いた人の名前を入力してください"); fromInp.focus(); return; }
     store.set("seinen.name", from);
     const text = ta.value.trim();
     if (!text) { toast("メッセージを入力してください"); ta.focus(); return; }
-    const res = await post({ action: "message", eventId: e.id, to, from, text: text.slice(0, 300), website: hp(form) });
-    if (res && res.id) {
-      saveKey(res.id, res.key);
-      const cur = document.getElementById(ta.id); if (cur) cur.value = "";
+    try {
+      await state.db.collection("messages").add({ eventId: e.id, to, from, text: text.slice(0, 300), uid: state.uid || "", createdAt: Date.now() });
+      live(ta).value = "";
       toast("応援メッセージを送りました");
-    }
-    await load();
+    } catch (err) { writeFailed(err); }
   }
   async function delMsg(x) {
-    const res = await post({ action: "deleteMessage", id: x.id, key: ownKeys()[x.id] });
-    if (res) { dropKey(x.id); toast("メッセージを削除しました"); }
-    await load();
+    try { await state.db.doc("messages/" + x.id).delete(); toast("メッセージを削除しました"); }
+    catch (err) { writeFailed(err); }
   }
 
   // ---- link helpers ----
@@ -578,7 +530,7 @@
       dates = `${ymdC}/${ymd(d).replace(/-/g, "")}`;
     }
     const spk = (e.speakers || []).map(x => x.name + " 氏" + (x.title ? `（${x.title}）` : "")).join("\n");
-    const details = [`講話：\n${spk}`, e.notice ? `※${e.notice}` : "", e.note || "", "応援メッセージはこちら：" + PAGE_URL].filter(Boolean).join("\n\n");
+    const details = [`講話：\n${spk}`, e.notice ? `※${e.notice}` : "", e.note || "", "応援メッセージはこちら：https://claude.ai/artifact/GCe64RuSzaueWQyv4hSy5C"].filter(Boolean).join("\n\n");
     const q = new URLSearchParams({ action: "TEMPLATE", text: `${e.unit} モーニングセミナー`, dates, ctz: "Asia/Tokyo", details, location: [e.venue, e.address].filter(Boolean).join(" ") });
     return "https://calendar.google.com/calendar/render?" + q.toString();
   }
@@ -616,46 +568,39 @@
   state.month = todayStr.slice(0, 7);
   render();
 
-  function setStatus(text, ok) {
-    $("#status").replaceChildren(el("span", { class: "pill" + (ok ? " live" : ""), id: "conn" }, el("span", { class: "dot" }), text));
+  const noDb = setTimeout(() => { if (!state.db) failConn(); }, 11000);
+  function failConn() {
+    $("#conn").replaceChildren(el("span", { class: "dot" }), "オフライン");
+    $("#events").replaceChildren(el("div", { class: "empty", text: "共有データに接続できませんでした。claude.ai にログインした状態でこのページを開いてください。" }));
   }
 
-  let firstLoad = true;
-  async function load() {
-    if (!API) return;
-    try {
-      const res = await fetch(API + "?action=list&t=" + Date.now());
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "load failed");
-      state.events = (data.events || []).filter(e => e.date);
-      state.rsvps = data.rsvps || [];
-      state.messages = data.messages || [];
-      state.loaded = true; state.lastLoad = Date.now();
-      if (firstLoad) { pickDefaultMonth(); firstLoad = false; }
-      const t = new Date();
-      setStatus(`最新の情報（${pad(t.getHours())}:${pad(t.getMinutes())} 更新）`, true);
-      banner("");
-      render();
-    } catch (err) {
-      console.error(err);
-      setStatus("接続できません", false);
-      if (!state.loaded) $("#events").replaceChildren(el("div", { class: "empty", text: "予定を読み込めませんでした。時間をおいてページを再読み込みしてください。" }));
-      if (!state.loaded) $("#bars").replaceChildren(el("li", { class: "empty", text: "予定を読み込めませんでした。" }));
+  (async () => {
+    const claude = window.claude;
+    if (!claude || !claude.use) { clearTimeout(noDb); failConn(); return; }
+    const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    clearTimeout(noDb);
+    if (!db) { failConn(); return; }
+    state.db = db;
+    if (user) {
+      try {
+        const [id, can] = await Promise.all([user.id(), user.can("data.write")]);
+        state.uid = id;
+        if (can === false) { state.canWrite = false; banner("閲覧のみの権限です。参加表明やメッセージ送信には、運営者に「Contributor（参加者）」以上の共有を依頼してください。", true); }
+      } catch (e) { console.warn(e); }
     }
-  }
+    const st = $("#status"); st.replaceChildren(el("span", { class: "pill live", id: "conn" }, el("span", { class: "dot" }), "リアルタイム共有中"));
 
-  if (!API) {
-    setStatus("未設定", false);
-    banner("初期設定が終わっていません。config.js に Apps Script のウェブアプリ URL を入れてください（SETUP.md 参照）。");
-    $("#bars").replaceChildren(el("li", { class: "empty", text: "予定はまだ読み込めません。" }));
-    $("#events").replaceChildren();
-  } else {
-    load();
-    // 他の人の参加表明・メッセージを取り込むため、表示中は30秒ごとに更新
-    setInterval(() => { if (document.visibilityState === "visible" && !state.busy) load(); }, 30000);
-    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - state.lastLoad > 15000) load(); });
-  }
+    let firstEvents = true;
+    const err = e => { console.error(e); if (e && e.code === "revoked") failConn(); };
+    db.collection("events").onSnapshot(snap => {
+      state.events = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.date)
+        .sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
+      state.loaded = true;
+      if (firstEvents) { pickDefaultMonth(); firstEvents = false; }
+      render();
+    }, err);
+    db.collection("rsvps").onSnapshot(snap => { state.rsvps = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, err);
+    db.collection("messages").onSnapshot(snap => { state.messages = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, err);
+  })();
 })();
 </script>
-</body>
-</html>
