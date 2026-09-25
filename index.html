@@ -1,0 +1,581 @@
+<title>青年委員 応援カレンダー</title>
+<meta name="description" content="倫理法人会 講話・モーニングセミナーの予定共有、参加表明、登壇者への応援メッセージ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f1f4f8;
+    --surface: #ffffff;
+    --surface-2: #e8edf4;
+    --ink: #17213a;
+    --ink-2: #4c5773;
+    --ink-3: #7c86a0;
+    --line: #d5dce7;
+    --accent: #d9822b;
+    --accent-ink: #ffffff;
+    --accent-soft: #fbead6;
+    --go: #2d7d5f;
+    --go-soft: #dcefe6;
+    --warn: #b4452f;
+    --warn-soft: #f8e1dc;
+    --note: #fff7df;
+    --note-line: #eadcae;
+    --shadow: 0 1px 2px rgba(23,33,58,.06), 0 4px 16px rgba(23,33,58,.06);
+    --f-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --f-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --f-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0f1422; --surface: #182036; --surface-2: #212a42; --ink: #e9edf6; --ink-2: #b3bbd0; --ink-3: #8390ab;
+      --line: #2e3854; --accent: #f0a04b; --accent-ink: #1a1206; --accent-soft: #3a2a17; --go: #5cc39a; --go-soft: #173529;
+      --warn: #ef8c75; --warn-soft: #3d201b; --note: #2a2618; --note-line: #4a4228;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0f1422; --surface: #182036; --surface-2: #212a42; --ink: #e9edf6; --ink-2: #b3bbd0; --ink-3: #8390ab;
+    --line: #2e3854; --accent: #f0a04b; --accent-ink: #1a1206; --accent-soft: #3a2a17; --go: #5cc39a; --go-soft: #173529;
+    --warn: #ef8c75; --warn-soft: #3d201b; --note: #2a2618; --note-line: #4a4228;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.7; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; padding-block: 24px 64px; display: grid; gap: 28px; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  a { color: inherit; }
+
+  /* header */
+  header.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; }
+  .brand small { display: block; font-size: 12px; letter-spacing: .12em; color: var(--ink-3); }
+  .brand h1 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(26px, 5vw, 36px); line-height: 1.25; text-wrap: balance; }
+  .brand h1 .sun { color: var(--accent); }
+  .status { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); font-size: 12px; }
+  .pill.admin { background: var(--accent-soft); color: var(--ink); }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); }
+  .pill.live .dot { background: var(--go); }
+
+  .myname { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+  .myname input { width: 12em; }
+
+  input[type=text], input[type=date], input[type=time], textarea, select {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0;
+  }
+  textarea { resize: vertical; width: 100%; }
+  .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 14px; font-weight: 500; }
+  .btn:hover { border-color: var(--ink-3); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .btn.primary:hover { filter: brightness(1.05); }
+  .btn.go { background: var(--go); border-color: var(--go); color: #fff; font-weight: 700; }
+  .btn.danger { color: var(--warn); border-color: var(--warn); }
+  .btn.small { padding: 3px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .banner { padding: 10px 14px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); font-size: 14px; }
+  .banner.info { background: var(--surface-2); }
+
+  /* calendar */
+  .cal { background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 16px; display: grid; gap: 12px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .cal-head h2 { margin: 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; display: flex; align-items: baseline; gap: 10px; }
+  .cal-head h2 .yr { font-family: var(--f-mono); font-size: 14px; color: var(--ink-3); font-weight: 400; }
+  .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .dow { font-size: 12px; text-align: center; color: var(--ink-3); letter-spacing: .1em; }
+  .dow.sun, .day.sun .n { color: var(--warn); }
+  .dow.sat, .day.sat .n { color: #3f6fb5; }
+  .day { min-height: 72px; border-radius: 8px; padding: 4px 6px; background: var(--bg); display: flex; flex-direction: column; gap: 2px; text-align: left; border: 1px solid transparent; }
+  .day.out { background: transparent; }
+  .day .n { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .day.has { background: var(--accent-soft); border-color: var(--accent); cursor: pointer; }
+  .day.has:hover { filter: brightness(.98); }
+  .day .tag { font-size: 11px; line-height: 1.3; font-weight: 700; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .day .cnt { margin-top: auto; font-size: 10.5px; color: var(--ink-2); font-family: var(--f-mono); }
+  .day.today { border-color: var(--ink-3); border-style: dashed; }
+  @media (max-width: 560px) {
+    .day { min-height: 52px; padding: 3px; }
+    .day .tag { font-size: 9.5px; -webkit-line-clamp: 2; }
+    .day .cnt { display: none; }
+  }
+
+  /* events */
+  .list-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
+  .list-head h2 { margin: 0; font-family: var(--f-display); font-size: 20px; font-weight: 800; }
+  .events { display: grid; gap: 18px; }
+  .empty { color: var(--ink-3); padding: 24px; text-align: center; background: var(--surface); border-radius: 14px; }
+
+  .ev { background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); display: grid; grid-template-columns: 92px 1fr; overflow: hidden; scroll-margin-top: 16px; }
+  .ev.flash { animation: flash 1.4s ease-out; }
+  @keyframes flash { 0% { box-shadow: 0 0 0 3px var(--accent); } 100% { box-shadow: var(--shadow); } }
+  @media (prefers-reduced-motion: reduce) { .ev.flash { animation: none; } }
+  .ev.past { opacity: .72; }
+  .date { background: var(--ink); color: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px 6px; gap: 2px; }
+  .date .m { font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em; opacity: .75; }
+  .date .d { font-family: var(--f-display); font-size: 40px; font-weight: 800; line-height: 1; }
+  .date .w { font-size: 13px; }
+  .date .t { font-family: var(--f-mono); font-size: 12px; margin-top: 6px; opacity: .8; }
+  .body { padding: 16px 18px; display: grid; gap: 14px; min-width: 0; }
+  @media (max-width: 560px) {
+    .ev { grid-template-columns: 1fr; }
+    .date { flex-direction: row; justify-content: flex-start; align-items: baseline; gap: 10px; padding: 10px 16px; }
+    .date .d { font-size: 28px; }
+    .date .t { margin: 0 0 0 auto; }
+  }
+  .ev-top { display: flex; justify-content: space-between; gap: 8px; align-items: start; flex-wrap: wrap; }
+  .unit { margin: 0; font-family: var(--f-display); font-size: 20px; font-weight: 800; line-height: 1.35; }
+  .notice { display: inline-block; font-size: 12px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 4px; padding: 0 8px; margin-right: 6px; }
+  .venue { font-size: 14px; color: var(--ink-2); }
+  .venue a { color: var(--ink-2); text-decoration-color: var(--line); text-underline-offset: 3px; }
+  .label { font-size: 11.5px; letter-spacing: .14em; color: var(--ink-3); font-weight: 700; }
+  .speakers { display: grid; gap: 6px; }
+  .spk { display: flex; flex-wrap: wrap; gap: 0 10px; align-items: baseline; }
+  .spk b { font-size: 17px; }
+  .spk span { font-size: 12.5px; color: var(--ink-2); }
+  .ev-note { font-size: 12.5px; color: var(--ink-2); }
+
+  .section { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 10px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .count { font-family: var(--f-mono); font-size: 13px; color: var(--ink-2); }
+  .count b { font-size: 18px; color: var(--go); }
+  .attendees { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--go-soft); font-size: 13.5px; }
+  .chip button { border: 0; background: transparent; padding: 0 2px; color: var(--ink-3); font-size: 14px; line-height: 1; }
+  .chip button:hover { color: var(--warn); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .row input[type=text] { flex: 1 1 10em; }
+
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 420px; overflow-y: auto; padding: 2px; }
+  .msg { background: var(--note); border: 1px solid var(--note-line); border-radius: 4px 4px 12px 4px; padding: 10px 12px; display: grid; gap: 6px; align-content: start; }
+  .msg .to { font-size: 12px; color: var(--accent); font-weight: 700; }
+  .msg p { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 14.5px; }
+  .msg .from { font-size: 12px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 6px; align-items: center; }
+  .msg .from button { border: 0; background: transparent; color: var(--ink-3); font-size: 12px; padding: 0; text-decoration: underline; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filters button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 1px 10px; font-size: 12.5px; }
+  .filters button[aria-pressed=true] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .compose { display: grid; gap: 8px; background: var(--bg); border-radius: 10px; padding: 10px; }
+  .compose .row select { flex: 1 1 10em; }
+  .hint { font-size: 12px; color: var(--ink-3); }
+
+  /* admin */
+  .admin { background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; display: grid; gap: 14px; border-top: 4px solid var(--accent); }
+  .admin h2 { margin: 0; font-family: var(--f-display); font-size: 20px; font-weight: 800; }
+  .form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+  .form label { display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); font-weight: 500; }
+  .form .full { grid-column: 1 / -1; }
+  @media (max-width: 560px) { .form { grid-template-columns: 1fr; } }
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: 14px; box-shadow: var(--shadow); z-index: 10; max-width: calc(100% - 32px); }
+  footer { font-size: 12px; color: var(--ink-3); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <small>福岡県倫理法人会 青年委員</small>
+      <h1>講話・モーニングセミナー<br><span class="sun">応援</span>カレンダー</h1>
+    </div>
+    <div style="display:grid; gap:8px; justify-items:end;">
+      <div class="status" id="status"><span class="pill" id="conn"><span class="dot"></span>接続中…</span></div>
+      <label class="myname" for="myName">あなたの名前
+        <input type="text" id="myName" maxlength="30" placeholder="例：山田 太郎" autocomplete="name">
+      </label>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <section class="cal" aria-label="月間カレンダー">
+    <div class="cal-head">
+      <button class="btn small" id="prevM" aria-label="前の月">← 前月</button>
+      <h2 id="calTitle"></h2>
+      <button class="btn small" id="nextM" aria-label="次の月">翌月 →</button>
+    </div>
+    <div class="grid" id="calGrid"></div>
+  </section>
+
+  <section id="adminBox" class="admin" hidden>
+    <div class="list-head">
+      <h2 id="formTitle">予定を追加する（運営者）</h2>
+      <span class="hint">この欄は運営者（編集権限のある人）にだけ表示されます</span>
+    </div>
+    <form id="evForm" class="form" autocomplete="off">
+      <label>日付 <input type="date" id="fDate" required></label>
+      <label>開始時刻（任意）<input type="time" id="fTime"></label>
+      <label class="full">単会名 <input type="text" id="fUnit" required placeholder="例：春日市 倫理法人会"></label>
+      <label>会場 <input type="text" id="fVenue" required placeholder="例：福岡サンパレス"></label>
+      <label>住所 <input type="text" id="fAddr" placeholder="例：福岡市博多区築港本町2-1"></label>
+      <label class="full">お知らせ（任意・赤字で表示）<input type="text" id="fNotice" placeholder="例：会場変更"></label>
+      <label class="full">講話者（1行に1人。「氏名｜肩書き」の形で入力）
+        <textarea id="fSpk" rows="3" required placeholder="園田 智昭｜福岡県倫理法人会 青年委員長 / AIG損害保険(株)&#10;花岡 進輔｜北九州市洞海倫理法人会 幹事"></textarea>
+      </label>
+      <label class="full">備考（任意）<input type="text" id="fNote"></label>
+      <div class="full row">
+        <button type="submit" class="btn primary" id="fSave">予定を追加</button>
+        <button type="button" class="btn" id="fCancel" hidden>編集をやめる</button>
+      </div>
+    </form>
+  </section>
+
+  <section style="display:grid; gap:14px;">
+    <div class="list-head">
+      <h2 id="listTitle">予定</h2>
+      <span class="hint">「参加する」で参加表明、「応援メッセージ」で登壇者にエールを送れます</span>
+    </div>
+    <div class="events" id="events"><div class="empty">予定を読み込んでいます…</div></div>
+  </section>
+
+  <footer>参加表明と応援メッセージはこのページを開いた全員に共有されます。名前は本名またはニックネームでどうぞ。</footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const WD = ["日","月","火","水","木","金","土"];
+  const state = {
+    db: null, uid: null, admin: false, canWrite: true,
+    events: [], rsvps: [], messages: [],
+    month: null, filter: {}, // eventId -> speaker name filter
+    editing: null, confirmDel: null, loaded: false,
+  };
+
+  // ---- small helpers ----
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+  function el(tag, attrs = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === "class") n.className = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else if (k === "text") n.textContent = v;
+      else n.setAttribute(k, v === true ? "" : v);
+    }
+    for (const c of kids.flat()) if (c != null && c !== false) n.append(c instanceof Node ? c : document.createTextNode(String(c)));
+    return n;
+  }
+  let toastT;
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 2600);
+  }
+  function banner(msg, info) {
+    const b = $("#banner"); b.textContent = msg || ""; b.hidden = !msg; b.classList.toggle("info", !!info);
+  }
+  const pad = n => String(n).padStart(2, "0");
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const todayStr = ymd(new Date());
+  function parseDate(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+  function myName() { return ($("#myName").value || "").trim(); }
+  function needName() {
+    const n = myName();
+    if (!n) { toast("先に上の「あなたの名前」を入力してください"); $("#myName").focus(); }
+    return n;
+  }
+  function fmtTime(ms) {
+    const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function writeFailed(e) {
+    console.error(e);
+    if (e && e.code === "invalid_argument") {
+      state.canWrite = false;
+      banner("書き込み権限がありません。運営者に「Contributor（参加者）」以上の共有設定を依頼してください。");
+      render();
+    } else if (e && e.code === "quota_exceeded") {
+      toast("保存容量の上限に達しました。運営者に連絡してください");
+    } else {
+      toast("保存できませんでした。通信状況を確認してもう一度お試しください");
+    }
+  }
+
+  // ---- name ----
+  $("#myName").value = store.get("seinen.name") || "";
+  $("#myName").addEventListener("change", () => store.set("seinen.name", myName()));
+
+  // ---- month nav ----
+  $("#prevM").addEventListener("click", () => shiftMonth(-1));
+  $("#nextM").addEventListener("click", () => shiftMonth(1));
+  function shiftMonth(k) {
+    const [y, m] = state.month.split("-").map(Number);
+    const d = new Date(y, m - 1 + k, 1);
+    state.month = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+    render();
+  }
+  function pickDefaultMonth() {
+    const up = state.events.find(e => e.date >= todayStr) || state.events[state.events.length - 1];
+    state.month = up ? up.date.slice(0, 7) : todayStr.slice(0, 7);
+  }
+
+  // ---- render ----
+  function render() {
+    renderCal();
+    renderEvents();
+    $("#adminBox").hidden = !state.admin;
+  }
+
+  function renderCal() {
+    const [y, m] = state.month.split("-").map(Number);
+    $("#calTitle").replaceChildren(el("span", { class: "yr", text: String(y) }), `${m}月`);
+    const g = $("#calGrid"); g.replaceChildren();
+    WD.forEach((w, i) => g.append(el("div", { class: "dow" + (i === 0 ? " sun" : i === 6 ? " sat" : ""), text: w })));
+    const first = new Date(y, m - 1, 1);
+    const days = new Date(y, m, 0).getDate();
+    for (let i = 0; i < first.getDay(); i++) g.append(el("div", { class: "day out" }));
+    for (let d = 1; d <= days; d++) {
+      const ds = `${y}-${pad(m)}-${pad(d)}`;
+      const dow = new Date(y, m - 1, d).getDay();
+      const evs = state.events.filter(e => e.date === ds);
+      const cls = ["day", dow === 0 ? "sun" : dow === 6 ? "sat" : "", evs.length ? "has" : "", ds === todayStr ? "today" : ""].join(" ");
+      if (evs.length) {
+        const cnt = evs.reduce((a, e) => a + state.rsvps.filter(r => r.eventId === e.id).length, 0);
+        g.append(el("button", { class: cls, type: "button", "aria-label": `${m}月${d}日 ${evs.map(e => e.unit).join("、")}`, onclick: () => jumpTo(evs[0].id) },
+          el("span", { class: "n", text: d }),
+          evs.map(e => el("span", { class: "tag", text: (e.unit || "").replace(/\s*倫理法人会$/, "") })),
+          el("span", { class: "cnt", text: `参加 ${cnt}` })));
+      } else {
+        g.append(el("div", { class: cls }, el("span", { class: "n", text: d })));
+      }
+    }
+  }
+
+  function jumpTo(id) {
+    const card = document.getElementById("ev-" + id);
+    if (!card) return;
+    card.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
+  }
+
+  function renderEvents() {
+    const [y, m] = state.month.split("-").map(Number);
+    $("#listTitle").textContent = `${y}年${m}月の予定`;
+    const box = $("#events");
+    if (!state.loaded) return;
+    const list = state.events.filter(e => e.date.startsWith(state.month));
+    if (!list.length) {
+      box.replaceChildren(el("div", { class: "empty", text: state.admin ? "この月の予定はまだありません。上のフォームから追加できます。" : "この月の予定はまだありません。" }));
+      return;
+    }
+    // keep what people are typing when another viewer's update re-renders the list
+    const typed = {};
+    box.querySelectorAll("input[id], textarea[id], select[id]").forEach(n => (typed[n.id] = n.value));
+    const focusId = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : null;
+    const boards = {};
+    box.querySelectorAll(".ev").forEach(c => { const b = c.querySelector(".board"); if (b) boards[c.id] = b.scrollTop; });
+    box.replaceChildren(...list.map(evCard));
+    for (const [id, v] of Object.entries(typed)) { const n = document.getElementById(id); if (n) n.value = v; }
+    for (const [id, top] of Object.entries(boards)) { const b = document.querySelector(`#${id} .board`); if (b) b.scrollTop = top; }
+    if (focusId) { const n = document.getElementById(focusId); if (n) n.focus({ preventScroll: true }); }
+  }
+
+  function evCard(e) {
+    const d = parseDate(e.date);
+    const rs = state.rsvps.filter(r => r.eventId === e.id).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    const ms = state.messages.filter(x => x.eventId === e.id).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    const speakers = Array.isArray(e.speakers) ? e.speakers : [];
+    const past = e.date < todayStr;
+    const name = myName();
+    const mine = rs.find(r => r.uid && r.uid === state.uid && (!name || r.name === name)) ;
+    const ro = !state.canWrite || !state.db;
+
+    const mapQ = encodeURIComponent([e.venue, e.address].filter(Boolean).join(" "));
+
+    // admin tools
+    const tools = state.admin ? el("div", { class: "row" },
+      el("button", { class: "btn small", type: "button", onclick: () => startEdit(e) }, "編集"),
+      state.confirmDel === e.id
+        ? [el("button", { class: "btn small danger", type: "button", onclick: () => delEvent(e) }, "本当に削除"),
+           el("button", { class: "btn small", type: "button", onclick: () => { state.confirmDel = null; render(); } }, "やめる")]
+        : el("button", { class: "btn small danger", type: "button", onclick: () => { state.confirmDel = e.id; render(); } }, "削除")
+    ) : null;
+
+    // attendance
+    const nameInp = el("input", { type: "text", id: "rsvp-" + e.id, maxlength: "30", placeholder: "参加する人の名前", value: name, disabled: ro });
+    const attend = el("div", { class: "section" },
+      el("div", { class: "section-head" },
+        el("span", { class: "label", text: "参加予定" }),
+        el("span", { class: "count" }, el("b", { text: rs.length }), " 名")),
+      rs.length ? el("div", { class: "attendees" }, rs.map(r => el("span", { class: "chip" }, r.name,
+        (r.uid && r.uid === state.uid) || state.admin
+          ? el("button", { type: "button", title: "参加を取り消す", "aria-label": `${r.name} の参加を取り消す`, onclick: () => cancelRsvp(r), disabled: ro }, "×") : null)))
+        : el("span", { class: "hint", text: "まだ参加表明はありません。一番乗りでどうぞ。" }),
+      past ? el("span", { class: "hint", text: "この回は終了しました。" }) :
+      el("form", { class: "row", onsubmit: ev => { ev.preventDefault(); addRsvp(e, nameInp.value.trim(), rs); } },
+        nameInp,
+        el("button", { class: "btn go", type: "submit", disabled: ro }, mine ? "もう1名 参加する" : "参加する")));
+
+    // messages
+    const f = state.filter[e.id] || "";
+    const shown = f ? ms.filter(x => x.to === f) : ms;
+    const sel = el("select", { id: "to-" + e.id, "aria-label": "応援する登壇者", disabled: ro },
+      el("option", { value: "", text: speakers.length > 1 ? "登壇者の皆さんへ" : (speakers[0] ? speakers[0].name + " 氏へ" : "登壇者へ") }),
+      speakers.length > 1 ? speakers.map(s => el("option", { value: s.name, text: s.name + " 氏へ" })) : null);
+    const ta = el("textarea", { id: "msg-" + e.id, rows: "2", maxlength: "300", placeholder: "応援メッセージ（300字まで）", disabled: ro });
+    const cheer = el("div", { class: "section" },
+      el("div", { class: "section-head" },
+        el("span", { class: "label", text: "応援メッセージ" }),
+        el("span", { class: "count" }, el("b", { text: ms.length, style: "color:var(--accent)" }), " 件")),
+      speakers.length > 1 && ms.length ? el("div", { class: "filters", role: "group", "aria-label": "登壇者で絞り込み" },
+        [["", "すべて"], ...speakers.map(s => [s.name, s.name])].map(([v, t]) =>
+          el("button", { type: "button", "aria-pressed": String(f === v), onclick: () => { state.filter[e.id] = v; render(); } }, t))) : null,
+      shown.length ? el("div", { class: "board" }, shown.map(x => el("article", { class: "msg" },
+        el("span", { class: "to", text: (x.to ? x.to + " 氏へ" : (speakers.length === 1 ? speakers[0].name + " 氏へ" : "登壇者の皆さんへ")) }),
+        el("p", { text: x.text }),
+        el("span", { class: "from" }, el("span", {}, `${x.from}　`, el("span", { style: "font-family:var(--f-mono)", text: fmtTime(x.createdAt) })),
+          (x.uid && x.uid === state.uid) || state.admin ? el("button", { type: "button", onclick: () => delMsg(x), disabled: ro }, "削除") : null))))
+        : el("span", { class: "hint", text: "最初の応援メッセージを送ってみましょう。" }),
+      el("form", { class: "compose", onsubmit: ev => { ev.preventDefault(); sendMsg(e, sel.value, ta); } },
+        el("div", { class: "row" }, sel, el("button", { class: "btn primary", type: "submit", disabled: ro }, "応援を送る")),
+        ta));
+
+    return el("article", { class: "ev" + (past ? " past" : ""), id: "ev-" + e.id },
+      el("div", { class: "date" },
+        el("span", { class: "m", text: `${d.getMonth() + 1}月` }),
+        el("span", { class: "d", text: d.getDate() }),
+        el("span", { class: "w", text: `（${WD[d.getDay()]}）` }),
+        e.time ? el("span", { class: "t", text: e.time + "〜" }) : null),
+      el("div", { class: "body" },
+        el("div", { class: "ev-top" },
+          el("div", {},
+            el("h3", { class: "unit", text: e.unit }),
+            el("div", { class: "venue" },
+              e.notice ? el("span", { class: "notice", text: e.notice }) : null,
+              el("a", { href: `https://www.google.com/maps/search/?api=1&query=${mapQ}`, target: "_blank", rel: "noopener" }, e.venue),
+              e.address ? `（${e.address}）` : "")),
+          tools),
+        el("div", { class: "speakers" },
+          el("span", { class: "label", text: "講話" }),
+          speakers.map(s => el("div", { class: "spk" }, el("b", { text: s.name + " 氏" }), s.title ? el("span", { text: s.title }) : null)),
+          e.note ? el("div", { class: "ev-note", text: e.note }) : null),
+        attend, cheer));
+  }
+
+  // ---- writes ----
+  async function addRsvp(e, name, rs) {
+    if (!name) { toast("名前を入力してください"); return; }
+    if (rs.some(r => r.name === name)) { toast(`${name} さんは参加登録済みです`); return; }
+    if (!myName()) { $("#myName").value = name; store.set("seinen.name", name); }
+    try {
+      await state.db.collection("rsvps").add({ eventId: e.id, name, uid: state.uid || "", createdAt: Date.now() });
+      toast(`${name} さんの参加を登録しました`);
+    } catch (err) { writeFailed(err); }
+  }
+  async function cancelRsvp(r) {
+    try { await state.db.doc("rsvps/" + r.id).delete(); toast(`${r.name} さんの参加を取り消しました`); }
+    catch (err) { writeFailed(err); }
+  }
+  async function sendMsg(e, to, ta) {
+    const from = needName(); if (!from) return;
+    const text = ta.value.trim();
+    if (!text) { toast("メッセージを入力してください"); ta.focus(); return; }
+    try {
+      await state.db.collection("messages").add({ eventId: e.id, to, from, text: text.slice(0, 300), uid: state.uid || "", createdAt: Date.now() });
+      ta.value = "";
+      const live = document.getElementById(ta.id); if (live) live.value = "";
+      toast("応援メッセージを送りました");
+    } catch (err) { writeFailed(err); }
+  }
+  async function delMsg(x) {
+    try { await state.db.doc("messages/" + x.id).delete(); toast("メッセージを削除しました"); }
+    catch (err) { writeFailed(err); }
+  }
+
+  // ---- admin form ----
+  const F = id => document.getElementById(id);
+  function parseSpeakers(txt) {
+    return txt.split(/\n/).map(l => l.trim()).filter(Boolean).map(l => {
+      const [name, ...rest] = l.split(/[｜|]/);
+      return { name: name.trim().replace(/\s*氏$/, ""), title: rest.join("｜").trim() };
+    });
+  }
+  function startEdit(e) {
+    state.editing = e.id;
+    F("fDate").value = e.date; F("fTime").value = e.time || ""; F("fUnit").value = e.unit || "";
+    F("fVenue").value = e.venue || ""; F("fAddr").value = e.address || ""; F("fNotice").value = e.notice || "";
+    F("fSpk").value = (e.speakers || []).map(s => s.title ? `${s.name}｜${s.title}` : s.name).join("\n");
+    F("fNote").value = e.note || "";
+    $("#formTitle").textContent = "予定を編集する（運営者）";
+    F("fSave").textContent = "変更を保存"; F("fCancel").hidden = false;
+    $("#adminBox").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function resetForm() {
+    state.editing = null; $("#evForm").reset();
+    $("#formTitle").textContent = "予定を追加する（運営者）";
+    F("fSave").textContent = "予定を追加"; F("fCancel").hidden = true;
+  }
+  F("fCancel").addEventListener("click", resetForm);
+  $("#evForm").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const speakers = parseSpeakers(F("fSpk").value);
+    if (!speakers.length) { toast("講話者を1人以上入力してください"); return; }
+    const body = {
+      date: F("fDate").value, time: F("fTime").value, unit: F("fUnit").value.trim(),
+      venue: F("fVenue").value.trim(), address: F("fAddr").value.trim(), notice: F("fNotice").value.trim(),
+      speakers, note: F("fNote").value.trim(), updatedAt: Date.now(),
+    };
+    F("fSave").disabled = true;
+    try {
+      if (state.editing) await state.db.doc("events/" + state.editing).set(body);
+      else await state.db.collection("events").add(body);
+      toast(state.editing ? "予定を更新しました" : "予定を追加しました");
+      state.month = body.date.slice(0, 7);
+      resetForm(); render();
+    } catch (err) { writeFailed(err); }
+    finally { F("fSave").disabled = false; }
+  });
+  async function delEvent(e) {
+    state.confirmDel = null;
+    try {
+      await state.db.doc("events/" + e.id).delete();
+      toast("予定を削除しました");
+    } catch (err) { writeFailed(err); }
+  }
+
+  // ---- boot ----
+  state.month = todayStr.slice(0, 7);
+  render();
+
+  const noDb = setTimeout(() => { if (!state.db) failConn(); }, 11000);
+  function failConn() {
+    $("#conn").replaceChildren(el("span", { class: "dot" }), "オフライン");
+    $("#events").replaceChildren(el("div", { class: "empty", text: "共有データに接続できませんでした。claude.ai にログインした状態でこのページを開いてください。" }));
+  }
+
+  (async () => {
+    const claude = window.claude;
+    if (!claude || !claude.use) { clearTimeout(noDb); failConn(); return; }
+    const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    clearTimeout(noDb);
+    if (!db) { failConn(); return; }
+    state.db = db;
+    if (user) {
+      try {
+        const [id, admin, can] = await Promise.all([user.id(), user.canEdit(), user.can("data.write")]);
+        state.uid = id; state.admin = !!admin;
+        if (can === false) { state.canWrite = false; banner("閲覧のみの権限です。参加表明やメッセージ送信には、運営者に「Contributor（参加者）」以上の共有を依頼してください。", true); }
+      } catch (e) { console.warn(e); }
+    }
+    const st = $("#status"); st.replaceChildren(el("span", { class: "pill live", id: "conn" }, el("span", { class: "dot" }), "リアルタイム共有中"));
+    if (state.admin) st.append(el("span", { class: "pill admin", text: "運営者" }));
+
+    let firstEvents = true;
+    const err = e => { console.error(e); if (e && e.code === "revoked") failConn(); };
+    db.collection("events").onSnapshot(snap => {
+      state.events = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.date)
+        .sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
+      state.loaded = true;
+      if (firstEvents) { pickDefaultMonth(); firstEvents = false; }
+      render();
+    }, err);
+    db.collection("rsvps").onSnapshot(snap => { state.rsvps = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, err);
+    db.collection("messages").onSnapshot(snap => { state.messages = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, err);
+  })();
+})();
+</script>
