@@ -58,7 +58,7 @@
   .brand h1 .sun { color: var(--accent); }
   .status { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); font-size: 12px; }
-  .pill.admin { background: var(--accent-soft); color: var(--ink); }
+  .pill.staff { background: var(--accent-soft); color: var(--ink); }
   .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); }
   .pill.live .dot { background: var(--go); }
 
@@ -172,6 +172,34 @@
   @media (max-width: 560px) { .form { grid-template-columns: 1fr; } }
   .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: 14px; box-shadow: var(--shadow); z-index: 10; max-width: calc(100% - 32px); }
   footer { font-size: 12px; color: var(--ink-3); }
+  /* overview bars */
+  .overview { display: grid; gap: 12px; }
+  .overview .list-head h2 { font-size: 22px; }
+  .toggle { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .bars .mhead { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; color: var(--ink-3); padding: 6px 2px 0; }
+  .bar { width: 100%; display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: stretch; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-align: left; padding: 0; box-shadow: var(--shadow); }
+  .bar:hover { border-color: var(--accent); }
+  .bar .bd { background: var(--ink); color: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 8px 4px; line-height: 1.2; }
+  .bar .bd b { font-family: var(--f-display); font-size: 22px; font-weight: 800; }
+  .bar .bd span { font-size: 12px; }
+  .bar.next .bd { background: var(--accent); color: var(--accent-ink); }
+  .bar.past { opacity: .6; }
+  .bar .bm { padding: 8px 12px; display: grid; gap: 1px; min-width: 0; }
+  .bar .bu { font-weight: 700; font-size: 15.5px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .bar .bu .nx { font-size: 11px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; }
+  .bar .bs, .bar .bv { font-size: 12.5px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .bc { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 8px 14px; border-left: 1px solid var(--line); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+  .bar .bc b { font-family: var(--f-mono); font-size: 15px; color: var(--ink); }
+  @media (max-width: 560px) {
+    .bar { grid-template-columns: 64px minmax(0, 1fr); }
+    .bar .bc { grid-column: 2; flex-direction: row; gap: 12px; border-left: 0; padding: 0 12px 8px; }
+    .bar .bd b { font-size: 19px; }
+  }
+  details.cal > summary { cursor: pointer; font-family: var(--f-display); font-weight: 800; font-size: 18px; }
+  details.cal:not([open]) { gap: 0; }
+  .copybox { display: grid; gap: 6px; }
+  .copybox textarea { font-size: 13px; }
 </style>
 
 <div class="wrap">
@@ -180,7 +208,7 @@
       <small>福岡県倫理法人会 青年委員</small>
       <h1>講話・モーニングセミナー<br><span class="sun">応援</span>カレンダー</h1>
     </div>
-    <div style="display:grid; gap:8px; justify-items:end;">
+    <div style="display:grid; gap:8px; justify-items:start;">
       <div class="status" id="status"><span class="pill" id="conn"><span class="dot"></span>接続中…</span></div>
       <label class="myname" for="myName">あなたの名前
         <input type="text" id="myName" maxlength="30" placeholder="例：山田 太郎" autocomplete="name">
@@ -190,14 +218,33 @@
 
   <div id="banner" class="banner" hidden></div>
 
-  <section class="cal" aria-label="月間カレンダー">
+  <section class="overview" aria-label="予定一覧">
+    <div class="list-head">
+      <h2>これからの予定</h2>
+      <label class="hint toggle" for="showPast"><input type="checkbox" id="showPast"> 終了した回も表示</label>
+    </div>
+    <ol class="bars" id="bars"><li class="empty">予定を読み込んでいます…</li></ol>
+  </section>
+
+
+
+  <section style="display:grid; gap:14px;">
+    <div class="list-head">
+      <h2 id="listTitle">各回の詳細</h2>
+      <span class="hint">「参加する」で参加表明、「応援メッセージ」で登壇者にエールを送れます</span>
+    </div>
+    <div class="events" id="events"><div class="empty">予定を読み込んでいます…</div></div>
+  </section>
+
+  <details class="cal" id="calBox">
+    <summary>カレンダーで見る</summary>
     <div class="cal-head">
       <button class="btn small" id="prevM" aria-label="前の月">← 前月</button>
       <h2 id="calTitle"></h2>
       <button class="btn small" id="nextM" aria-label="次の月">翌月 →</button>
     </div>
     <div class="grid" id="calGrid"></div>
-  </section>
+  </details>
 
   <section id="adminBox" class="admin" hidden>
     <div class="list-head">
@@ -222,14 +269,6 @@
     </form>
   </section>
 
-  <section style="display:grid; gap:14px;">
-    <div class="list-head">
-      <h2 id="listTitle">予定</h2>
-      <span class="hint">「参加する」で参加表明、「応援メッセージ」で登壇者にエールを送れます</span>
-    </div>
-    <div class="events" id="events"><div class="empty">予定を読み込んでいます…</div></div>
-  </section>
-
   <footer>参加表明と応援メッセージはこのページを開いた全員に共有されます。名前は本名またはニックネームでどうぞ。</footer>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -241,7 +280,7 @@
   const state = {
     db: null, uid: null, admin: false, canWrite: true,
     events: [], rsvps: [], messages: [],
-    month: null, filter: {}, // eventId -> speaker name filter
+    month: null, filter: {}, copyOpen: {}, // eventId -> speaker name filter
     editing: null, confirmDel: null, loaded: false,
   };
 
@@ -275,11 +314,7 @@
   const todayStr = ymd(new Date());
   function parseDate(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
   function myName() { return ($("#myName").value || "").trim(); }
-  function needName() {
-    const n = myName();
-    if (!n) { toast("先に上の「あなたの名前」を入力してください"); $("#myName").focus(); }
-    return n;
-  }
+  const live = n => document.getElementById(n.id) || n;
   function fmtTime(ms) {
     const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
@@ -301,6 +336,7 @@
   $("#myName").addEventListener("change", () => store.set("seinen.name", myName()));
 
   // ---- month nav ----
+  $("#showPast").addEventListener("change", render);
   $("#prevM").addEventListener("click", () => shiftMonth(-1));
   $("#nextM").addEventListener("click", () => shiftMonth(1));
   function shiftMonth(k) {
@@ -316,6 +352,7 @@
 
   // ---- render ----
   function render() {
+    renderBars();
     renderCal();
     renderEvents();
     $("#adminBox").hidden = !state.admin;
@@ -347,20 +384,51 @@
   }
 
   function jumpTo(id) {
-    const card = document.getElementById("ev-" + id);
+    let card = document.getElementById("ev-" + id);
+    if (!card && !$("#showPast").checked) { $("#showPast").checked = true; render(); card = document.getElementById("ev-" + id); }
     if (!card) return;
     card.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
   }
 
+  function visibleEvents() {
+    return $("#showPast").checked ? state.events : state.events.filter(e => e.date >= todayStr);
+  }
+
+  function renderBars() {
+    const box = $("#bars");
+    if (!state.loaded) return;
+    const list = visibleEvents();
+    const next = state.events.find(e => e.date >= todayStr);
+    const items = [];
+    let lastM = "";
+    for (const e of list) {
+      const d = parseDate(e.date);
+      const mKey = e.date.slice(0, 7);
+      if (mKey !== lastM) { items.push(el("li", { class: "mhead", text: `${d.getFullYear()}年${d.getMonth() + 1}月` })); lastM = mKey; }
+      const nR = state.rsvps.filter(r => r.eventId === e.id).length;
+      const nM = state.messages.filter(x => x.eventId === e.id).length;
+      const spk = (e.speakers || []).map(x => x.name + " 氏").join("／");
+      const isNext = next && next.id === e.id;
+      items.push(el("li", {}, el("button", { type: "button", class: "bar" + (isNext ? " next" : "") + (e.date < todayStr ? " past" : ""), onclick: () => jumpTo(e.id) },
+        el("span", { class: "bd" }, el("b", { text: `${d.getMonth() + 1}/${d.getDate()}` }), el("span", { text: `（${WD[d.getDay()]}）${e.time ? " " + e.time : ""}` })),
+        el("span", { class: "bm" },
+          el("span", { class: "bu" }, e.unit, isNext ? el("span", { class: "nx", text: "次回" }) : null, e.notice ? el("span", { class: "notice", text: e.notice }) : null),
+          el("span", { class: "bs", text: "講話：" + spk }),
+          el("span", { class: "bv", text: "会場：" + e.venue })),
+        el("span", { class: "bc" }, el("span", {}, "参加 ", el("b", { text: nR }), " 名"), el("span", {}, "応援 ", el("b", { text: nM }), " 件")))));
+    }
+    if (!list.length) items.push(el("li", { class: "empty", text: "これからの予定はまだありません。" + (state.admin ? "下の「予定を追加する」から入力できます。" : "") }));
+    if (state.admin) items.push(el("li", {}, el("button", { type: "button", class: "btn small", onclick: () => $("#adminBox").scrollIntoView({ behavior: "smooth", block: "start" }) }, "＋ 予定を追加する（運営者）")));
+    box.replaceChildren(...items);
+  }
+
   function renderEvents() {
-    const [y, m] = state.month.split("-").map(Number);
-    $("#listTitle").textContent = `${y}年${m}月の予定`;
     const box = $("#events");
     if (!state.loaded) return;
-    const list = state.events.filter(e => e.date.startsWith(state.month));
+    const list = visibleEvents();
     if (!list.length) {
-      box.replaceChildren(el("div", { class: "empty", text: state.admin ? "この月の予定はまだありません。上のフォームから追加できます。" : "この月の予定はまだありません。" }));
+      box.replaceChildren(el("div", { class: "empty", text: "表示できる予定はありません。" }));
       return;
     }
     // keep what people are typing when another viewer's update re-renders the list
@@ -407,7 +475,7 @@
           ? el("button", { type: "button", title: "参加を取り消す", "aria-label": `${r.name} の参加を取り消す`, onclick: () => cancelRsvp(r), disabled: ro }, "×") : null)))
         : el("span", { class: "hint", text: "まだ参加表明はありません。一番乗りでどうぞ。" }),
       past ? el("span", { class: "hint", text: "この回は終了しました。" }) :
-      el("form", { class: "row", onsubmit: ev => { ev.preventDefault(); addRsvp(e, nameInp.value.trim(), rs); } },
+      el("form", { class: "row", onsubmit: ev => { ev.preventDefault(); addRsvp(e, live(nameInp).value.trim()); } },
         nameInp,
         el("button", { class: "btn go", type: "submit", disabled: ro }, mine ? "もう1名 参加する" : "参加する")));
 
@@ -418,10 +486,18 @@
       el("option", { value: "", text: speakers.length > 1 ? "登壇者の皆さんへ" : (speakers[0] ? speakers[0].name + " 氏へ" : "登壇者へ") }),
       speakers.length > 1 ? speakers.map(s => el("option", { value: s.name, text: s.name + " 氏へ" })) : null);
     const ta = el("textarea", { id: "msg-" + e.id, rows: "2", maxlength: "300", placeholder: "応援メッセージ（300字まで）", disabled: ro });
+    const fromInp = el("input", { type: "text", id: "from-" + e.id, maxlength: "30", placeholder: "あなたの名前", value: name, "aria-label": "書いた人の名前", disabled: ro });
+    const copyText = state.copyOpen[e.id] ? cheerText(e, ms) : null;
     const cheer = el("div", { class: "section" },
       el("div", { class: "section-head" },
         el("span", { class: "label", text: "応援メッセージ" }),
-        el("span", { class: "count" }, el("b", { text: ms.length, style: "color:var(--accent)" }), " 件")),
+        el("span", { class: "row" },
+          el("span", { class: "count" }, el("b", { text: ms.length, style: "color:var(--accent)" }), " 件"),
+          ms.length ? el("button", { type: "button", class: "btn small", onclick: () => copyCheers(e, ms) }, "一括コピー（LINE用）") : null)),
+      copyText ? el("div", { class: "copybox" },
+        el("span", { class: "hint", text: "自動でコピーできませんでした。下の文章を長押し（または Ctrl+C）でコピーしてください。" }),
+        el("textarea", { class: "copytext", rows: "8", readonly: true }, copyText),
+        el("button", { type: "button", class: "btn small", onclick: () => { delete state.copyOpen[e.id]; render(); } }, "閉じる")) : null,
       speakers.length > 1 && ms.length ? el("div", { class: "filters", role: "group", "aria-label": "登壇者で絞り込み" },
         [["", "すべて"], ...speakers.map(s => [s.name, s.name])].map(([v, t]) =>
           el("button", { type: "button", "aria-pressed": String(f === v), onclick: () => { state.filter[e.id] = v; render(); } }, t))) : null,
@@ -431,9 +507,11 @@
         el("span", { class: "from" }, el("span", {}, `${x.from}　`, el("span", { style: "font-family:var(--f-mono)", text: fmtTime(x.createdAt) })),
           (x.uid && x.uid === state.uid) || state.admin ? el("button", { type: "button", onclick: () => delMsg(x), disabled: ro }, "削除") : null))))
         : el("span", { class: "hint", text: "最初の応援メッセージを送ってみましょう。" }),
-      el("form", { class: "compose", onsubmit: ev => { ev.preventDefault(); sendMsg(e, sel.value, ta); } },
-        el("div", { class: "row" }, sel, el("button", { class: "btn primary", type: "submit", disabled: ro }, "応援を送る")),
-        ta));
+      el("form", { class: "compose", onsubmit: ev => { ev.preventDefault(); sendMsg(e, live(sel).value, live(ta), live(fromInp)); } },
+        el("div", { class: "row" }, sel, fromInp),
+        ta,
+        el("div", { class: "row" }, el("button", { class: "btn primary", type: "submit", disabled: ro }, "応援を送る"),
+          el("span", { class: "hint", text: "メッセージと名前が掲示板に表示されます" }))));
 
     return el("article", { class: "ev" + (past ? " past" : ""), id: "ev-" + e.id },
       el("div", { class: "date" },
@@ -458,7 +536,8 @@
   }
 
   // ---- writes ----
-  async function addRsvp(e, name, rs) {
+  async function addRsvp(e, name) {
+    const rs = state.rsvps.filter(r => r.eventId === e.id);
     if (!name) { toast("名前を入力してください"); return; }
     if (rs.some(r => r.name === name)) { toast(`${name} さんは参加登録済みです`); return; }
     if (!myName()) { $("#myName").value = name; store.set("seinen.name", name); }
@@ -471,20 +550,51 @@
     try { await state.db.doc("rsvps/" + r.id).delete(); toast(`${r.name} さんの参加を取り消しました`); }
     catch (err) { writeFailed(err); }
   }
-  async function sendMsg(e, to, ta) {
-    const from = needName(); if (!from) return;
+  async function sendMsg(e, to, ta, fromInp) {
+    const from = fromInp.value.trim();
+    if (!from) { toast("書いた人の名前を入力してください"); fromInp.focus(); return; }
+    if (!myName()) { $("#myName").value = from; store.set("seinen.name", from); }
     const text = ta.value.trim();
     if (!text) { toast("メッセージを入力してください"); ta.focus(); return; }
     try {
       await state.db.collection("messages").add({ eventId: e.id, to, from, text: text.slice(0, 300), uid: state.uid || "", createdAt: Date.now() });
-      ta.value = "";
-      const live = document.getElementById(ta.id); if (live) live.value = "";
+      live(ta).value = "";
       toast("応援メッセージを送りました");
     } catch (err) { writeFailed(err); }
   }
   async function delMsg(x) {
     try { await state.db.doc("messages/" + x.id).delete(); toast("メッセージを削除しました"); }
     catch (err) { writeFailed(err); }
+  }
+
+  // ---- bulk copy for LINE ----
+  function cheerText(e, ms) {
+    const d = parseDate(e.date);
+    const speakers = e.speakers || [];
+    const one = speakers.length === 1 ? speakers[0].name : null;
+    const list = ms.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    const groups = [...speakers.map(s => [s.name, s.name + " 氏へ"]), ["", "登壇者の皆さんへ"]];
+    const lines = [
+      `【応援メッセージ】${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）${e.unit}`,
+      `講話：${speakers.map(s => s.name + " 氏").join("／")}`,
+    ];
+    for (const [key, head] of groups) {
+      const g = list.filter(x => { const k = x.to || one || ""; return key ? k === key : !speakers.some(s => s.name === k); });
+      if (!g.length) continue;
+      lines.push("", `▼ ${head}`);
+      for (const x of g) lines.push("", `「${x.text}」`, `　― ${x.from}`);
+    }
+    lines.push("", `（全${list.length}件）`);
+    return lines.join("\n");
+  }
+  function copyCheers(e, ms) {
+    const text = cheerText(e, ms);
+    const fallback = () => { state.copyOpen[e.id] = true; render(); const t = document.querySelector(`#ev-${e.id} .copytext`); if (t) { t.focus(); t.select(); } };
+    try {
+      navigator.clipboard.writeText(text)
+        .then(() => { delete state.copyOpen[e.id]; toast(`${ms.length}件コピーしました。LINEに貼り付けできます`); render(); })
+        .catch(fallback);
+    } catch { fallback(); }
   }
 
   // ---- admin form ----
@@ -563,7 +673,7 @@
       } catch (e) { console.warn(e); }
     }
     const st = $("#status"); st.replaceChildren(el("span", { class: "pill live", id: "conn" }, el("span", { class: "dot" }), "リアルタイム共有中"));
-    if (state.admin) st.append(el("span", { class: "pill admin", text: "運営者" }));
+    if (state.admin) st.append(el("span", { class: "pill staff", text: "運営者" }));
 
     let firstEvents = true;
     const err = e => { console.error(e); if (e && e.code === "revoked") failConn(); };
