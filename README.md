@@ -12,16 +12,20 @@
 - 「参加する」ボタンで名前付き参加表明（自分の登録は取り消し可）
 - 登壇者ごとに応援メッセージ（本文＋書いた人の名前）を投稿し、掲示板形式で表示（登壇者で絞り込み可）
 - 「一括コピー（LINE用）」で、その回の応援メッセージを登壇者ごとにまとめた文章としてコピー
-- 運営者（共有設定で Editor 以上）だけに「予定を追加・編集」フォームを表示（予定の削除機能はありません）
+- 予定の追加・変更は Claude Code から行います（ページ上に運営者画面はありません）
 
 ## 権限（共有メニューで設定）
 | 役割 | 共有設定 | できること |
 |---|---|---|
-| 運営者 | Editor | 予定の追加・編集、不適切な投稿の削除 |
-| 参加者 | Contributor | 参加表明、応援メッセージ投稿 |
+| 参加者 | Contributor | 参加表明、応援メッセージ投稿（自分の投稿は取り消し可） |
 | 閲覧のみ | Viewer | 見るだけ |
 
+予定（`events`）を書き換えられるのはページの持ち主だけです。
+
+## 予定の更新方法（Claude Code）
+Claude Code に「11月の予定を追加して」と日付・単会名・会場・住所・講話者（肩書き）を伝えると、共有データベースの `events` に書き込みます。変更・取り消し・不適切な投稿の削除も同様に依頼できます。
+
 ## データ構造
-- `events/{id}`: date, time, unit, venue, address, notice, speakers[{name,title}], note（書き込みは運営者のみ）
+- `events/{id}`: date, time, unit, venue, address, notice, speakers[{name,title}], note（書き込みはページの持ち主のみ）
 - `rsvps/{id}`: eventId, name, uid, createdAt
 - `messages/{id}`: eventId, to, from, text, uid, createdAt

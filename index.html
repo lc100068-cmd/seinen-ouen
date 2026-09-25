@@ -47,12 +47,9 @@
   .brand h1 .sun { color: var(--accent); }
   .status { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); font-size: 12px; }
-  .pill.staff { background: var(--accent-soft); color: var(--ink); }
   .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); }
   .pill.live .dot { background: var(--go); }
 
-  .myname { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
-  .myname input { width: 12em; }
 
   input[type=text], input[type=date], input[type=time], textarea, select {
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0;
@@ -157,13 +154,6 @@
   .compose .row select { flex: 1 1 10em; }
   .hint { font-size: 12px; color: var(--ink-3); }
 
-  /* admin */
-  .admin { background: var(--surface); border-radius: 8px; box-shadow: var(--shadow); padding: 18px; display: grid; gap: 14px; border-top: 4px solid var(--accent); }
-  .admin h2 { margin: 0; font-family: var(--f-display); font-size: 20px; font-weight: 700; }
-  .form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
-  .form label { display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); font-weight: 500; }
-  .form .full { grid-column: 1 / -1; }
-  @media (max-width: 560px) { .form { grid-template-columns: 1fr; } }
   .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 14px; box-shadow: var(--shadow); z-index: 10; max-width: calc(100% - 32px); }
   footer { font-size: 12px; color: var(--ink-3); }
   /* overview bars */
@@ -201,9 +191,6 @@
     </div>
     <div style="display:grid; gap:8px; justify-items:start;">
       <div class="status" id="status"><span class="pill" id="conn"><span class="dot"></span>接続中…</span></div>
-      <label class="myname" for="myName">あなたの名前
-        <input type="text" id="myName" maxlength="30" placeholder="例：山田 太郎" autocomplete="name">
-      </label>
     </div>
   </header>
 
@@ -237,28 +224,6 @@
     <div class="grid" id="calGrid"></div>
   </details>
 
-  <section id="adminBox" class="admin" hidden>
-    <div class="list-head">
-      <h2 id="formTitle">予定を追加する（運営者）</h2>
-      <span class="hint">この欄は運営者（編集権限のある人）にだけ表示されます</span>
-    </div>
-    <form id="evForm" class="form" autocomplete="off">
-      <label>日付 <input type="date" id="fDate" required></label>
-      <label>開始時刻（任意）<input type="time" id="fTime"></label>
-      <label class="full">単会名 <input type="text" id="fUnit" required placeholder="例：春日市 倫理法人会"></label>
-      <label>会場 <input type="text" id="fVenue" required placeholder="例：福岡サンパレス"></label>
-      <label>住所 <input type="text" id="fAddr" placeholder="例：福岡市博多区築港本町2-1"></label>
-      <label class="full">お知らせ（任意・赤字で表示）<input type="text" id="fNotice" placeholder="例：会場変更"></label>
-      <label class="full">講話者（1行に1人。「氏名｜肩書き」の形で入力）
-        <textarea id="fSpk" rows="3" required placeholder="園田 智昭｜福岡県倫理法人会 青年委員長 / AIG損害保険(株)&#10;花岡 進輔｜北九州市洞海倫理法人会 幹事"></textarea>
-      </label>
-      <label class="full">備考（任意）<input type="text" id="fNote"></label>
-      <div class="full row">
-        <button type="submit" class="btn primary" id="fSave">予定を追加</button>
-        <button type="button" class="btn" id="fCancel" hidden>編集をやめる</button>
-      </div>
-    </form>
-  </section>
 
   <footer>参加表明と応援メッセージはこのページを開いた全員に共有されます。名前は本名またはニックネームでどうぞ。</footer>
 </div>
@@ -269,10 +234,10 @@
   const $ = (s, r = document) => r.querySelector(s);
   const WD = ["日","月","火","水","木","金","土"];
   const state = {
-    db: null, uid: null, admin: false, canWrite: true,
+    db: null, uid: null, canWrite: true,
     events: [], rsvps: [], messages: [],
     month: null, filter: {}, copyOpen: {}, // eventId -> speaker name filter
-    editing: null, loaded: false,
+    loaded: false,
   };
 
   // ---- small helpers ----
@@ -304,7 +269,8 @@
   const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const todayStr = ymd(new Date());
   function parseDate(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
-  function myName() { return ($("#myName").value || "").trim(); }
+  // 最後に入力した名前を覚えておき、各フォームにあらかじめ入れる
+  function myName() { return (store.get("seinen.name") || "").trim(); }
   const live = n => document.getElementById(n.id) || n;
   function fmtTime(ms) {
     const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -323,8 +289,6 @@
   }
 
   // ---- name ----
-  $("#myName").value = store.get("seinen.name") || "";
-  $("#myName").addEventListener("change", () => store.set("seinen.name", myName()));
 
   // ---- month nav ----
   $("#showPast").addEventListener("change", render);
@@ -346,7 +310,6 @@
     renderBars();
     renderCal();
     renderEvents();
-    $("#adminBox").hidden = !state.admin;
   }
 
   function renderCal() {
@@ -404,8 +367,7 @@
           el("span", { class: "bs", text: "講話：" + spk }),
           el("span", { class: "bv", text: "会場：" + e.venue })))));
     }
-    if (!list.length) items.push(el("li", { class: "empty", text: "これからの予定はまだありません。" + (state.admin ? "下の「予定を追加する」から入力できます。" : "") }));
-    if (state.admin) items.push(el("li", {}, el("button", { type: "button", class: "btn small", onclick: () => $("#adminBox").scrollIntoView({ behavior: "smooth", block: "start" }) }, "＋ 予定を追加する（運営者）")));
+    if (!list.length) items.push(el("li", { class: "empty", text: "これからの予定はまだありません。" }));
     box.replaceChildren(...items);
   }
 
@@ -436,15 +398,10 @@
     const speakers = Array.isArray(e.speakers) ? e.speakers : [];
     const past = e.date < todayStr;
     const name = myName();
-    const mine = rs.find(r => r.uid && r.uid === state.uid && (!name || r.name === name)) ;
+    const mine = rs.some(r => r.uid && r.uid === state.uid);
     const ro = !state.canWrite || !state.db;
 
     const mapQ = encodeURIComponent([e.venue, e.address].filter(Boolean).join(" "));
-
-    // admin tools
-    const tools = state.admin ? el("div", { class: "row" },
-      el("button", { class: "btn small", type: "button", onclick: () => startEdit(e) }, "編集")
-    ) : null;
 
     // attendance
     const nameInp = el("input", { type: "text", id: "rsvp-" + e.id, maxlength: "30", placeholder: "参加する人の名前", value: name, disabled: ro });
@@ -453,7 +410,7 @@
         el("span", { class: "label", text: "参加予定" }),
 ),
       rs.length ? el("div", { class: "attendees" }, rs.map(r => el("span", { class: "chip" }, r.name,
-        (r.uid && r.uid === state.uid) || state.admin
+        r.uid && r.uid === state.uid
           ? el("button", { type: "button", title: "参加を取り消す", "aria-label": `${r.name} の参加を取り消す`, onclick: () => cancelRsvp(r), disabled: ro }, "×") : null)))
         : el("span", { class: "hint", text: "まだ参加表明はありません。一番乗りでどうぞ。" }),
       past ? el("span", { class: "hint", text: "この回は終了しました。" }) :
@@ -486,7 +443,7 @@
         el("span", { class: "to", text: (x.to ? x.to + " 氏へ" : (speakers.length === 1 ? speakers[0].name + " 氏へ" : "登壇者の皆さんへ")) }),
         el("p", { text: x.text }),
         el("span", { class: "from" }, el("span", {}, `${x.from}　`, el("span", { style: "font-family:var(--f-mono)", text: fmtTime(x.createdAt) })),
-          (x.uid && x.uid === state.uid) || state.admin ? el("button", { type: "button", onclick: () => delMsg(x), disabled: ro }, "削除") : null))))
+          x.uid && x.uid === state.uid ? el("button", { type: "button", onclick: () => delMsg(x), disabled: ro }, "削除") : null))))
         : el("span", { class: "hint", text: "最初の応援メッセージを送ってみましょう。" }),
       el("form", { class: "compose", onsubmit: ev => { ev.preventDefault(); sendMsg(e, live(sel).value, live(ta), live(fromInp)); } },
         el("div", { class: "row" }, sel, fromInp),
@@ -512,8 +469,7 @@
               el("a", { class: "linkbtn", href: `https://www.google.com/maps/search/?api=1&query=${mapQ}`, target: "_blank", rel: "noopener" },
                 icon("M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"), "地図を開く", el("span", { class: "ext", text: "↗" })),
               el("a", { class: "linkbtn", href: gcalUrl(e), target: "_blank", rel: "noopener" },
-                icon("M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm-2 8h14v10H5V10zm7 2v3H9v2h3v3h2v-3h3v-2h-3v-3h-2z"), "Googleカレンダーに登録", el("span", { class: "ext", text: "↗" })))),
-          tools),
+                icon("M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm-2 8h14v10H5V10zm7 2v3H9v2h3v3h2v-3h3v-2h-3v-3h-2z"), "Googleカレンダーに登録", el("span", { class: "ext", text: "↗" }))))),
         el("div", { class: "speakers" },
           el("span", { class: "label", text: "講話" }),
           speakers.map(s => el("div", { class: "spk" }, el("b", { text: s.name + " 氏" }), s.title ? el("span", { text: s.title }) : null)),
@@ -526,7 +482,7 @@
     const rs = state.rsvps.filter(r => r.eventId === e.id);
     if (!name) { toast("名前を入力してください"); return; }
     if (rs.some(r => r.name === name)) { toast(`${name} さんは参加登録済みです`); return; }
-    if (!myName()) { $("#myName").value = name; store.set("seinen.name", name); }
+    store.set("seinen.name", name);
     try {
       await state.db.collection("rsvps").add({ eventId: e.id, name, uid: state.uid || "", createdAt: Date.now() });
       toast(`${name} さんの参加を登録しました`);
@@ -539,7 +495,7 @@
   async function sendMsg(e, to, ta, fromInp) {
     const from = fromInp.value.trim();
     if (!from) { toast("書いた人の名前を入力してください"); fromInp.focus(); return; }
-    if (!myName()) { $("#myName").value = from; store.set("seinen.name", from); }
+    store.set("seinen.name", from);
     const text = ta.value.trim();
     if (!text) { toast("メッセージを入力してください"); ta.focus(); return; }
     try {
@@ -608,49 +564,6 @@
     } catch { fallback(); }
   }
 
-  // ---- admin form ----
-  const F = id => document.getElementById(id);
-  function parseSpeakers(txt) {
-    return txt.split(/\n/).map(l => l.trim()).filter(Boolean).map(l => {
-      const [name, ...rest] = l.split(/[｜|]/);
-      return { name: name.trim().replace(/\s*氏$/, ""), title: rest.join("｜").trim() };
-    });
-  }
-  function startEdit(e) {
-    state.editing = e.id;
-    F("fDate").value = e.date; F("fTime").value = e.time || ""; F("fUnit").value = e.unit || "";
-    F("fVenue").value = e.venue || ""; F("fAddr").value = e.address || ""; F("fNotice").value = e.notice || "";
-    F("fSpk").value = (e.speakers || []).map(s => s.title ? `${s.name}｜${s.title}` : s.name).join("\n");
-    F("fNote").value = e.note || "";
-    $("#formTitle").textContent = "予定を編集する（運営者）";
-    F("fSave").textContent = "変更を保存"; F("fCancel").hidden = false;
-    $("#adminBox").scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-  function resetForm() {
-    state.editing = null; $("#evForm").reset();
-    $("#formTitle").textContent = "予定を追加する（運営者）";
-    F("fSave").textContent = "予定を追加"; F("fCancel").hidden = true;
-  }
-  F("fCancel").addEventListener("click", resetForm);
-  $("#evForm").addEventListener("submit", async ev => {
-    ev.preventDefault();
-    const speakers = parseSpeakers(F("fSpk").value);
-    if (!speakers.length) { toast("講話者を1人以上入力してください"); return; }
-    const body = {
-      date: F("fDate").value, time: F("fTime").value, unit: F("fUnit").value.trim(),
-      venue: F("fVenue").value.trim(), address: F("fAddr").value.trim(), notice: F("fNotice").value.trim(),
-      speakers, note: F("fNote").value.trim(), updatedAt: Date.now(),
-    };
-    F("fSave").disabled = true;
-    try {
-      if (state.editing) await state.db.doc("events/" + state.editing).set(body);
-      else await state.db.collection("events").add(body);
-      toast(state.editing ? "予定を更新しました" : "予定を追加しました");
-      state.month = body.date.slice(0, 7);
-      resetForm(); render();
-    } catch (err) { writeFailed(err); }
-    finally { F("fSave").disabled = false; }
-  });
   // ---- boot ----
   state.month = todayStr.slice(0, 7);
   render();
@@ -670,13 +583,12 @@
     state.db = db;
     if (user) {
       try {
-        const [id, admin, can] = await Promise.all([user.id(), user.canEdit(), user.can("data.write")]);
-        state.uid = id; state.admin = !!admin;
+        const [id, can] = await Promise.all([user.id(), user.can("data.write")]);
+        state.uid = id;
         if (can === false) { state.canWrite = false; banner("閲覧のみの権限です。参加表明やメッセージ送信には、運営者に「Contributor（参加者）」以上の共有を依頼してください。", true); }
       } catch (e) { console.warn(e); }
     }
     const st = $("#status"); st.replaceChildren(el("span", { class: "pill live", id: "conn" }, el("span", { class: "dot" }), "リアルタイム共有中"));
-    if (state.admin) st.append(el("span", { class: "pill staff", text: "運営者" }));
 
     let firstEvents = true;
     const err = e => { console.error(e); if (e && e.code === "revoked") failConn(); };
