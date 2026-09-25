@@ -11,6 +11,7 @@
 | `gas/Code.gs` | Google Apps Script。スプレッドシートの読み書きとリマインドメール送信 |
 | `gas/appsscript.json` | Apps Script の設定（タイムゾーン・権限） |
 | `SETUP.md` | 初回の設定手順 |
+| `CHROME_PROMPT.md` | 設定作業を Claude in Chrome に任せるためのプロンプト（GAS 全文つき） |
 | `artifact/index.html` | 旧版（claude.ai 版。https://claude.ai/artifact/GCe64RuSzaueWQyv4hSy5C ） |
 
 データはすべて Google スプレッドシート（「予定」「参加者」「応援メッセージ」シート）に保存されます。
