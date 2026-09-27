@@ -14,7 +14,7 @@
 
 // ===== 設定 =====
 const CONFIG = {
-  PAGE_URL: '',               // 公開ページのURL（例: https://ユーザー名.github.io/seinen-ouen/）メール本文に載せます
+  PAGE_URL: 'https://lc100068-cmd.github.io/seinen-ouen/', // 公開ページのURL（メール本文に載せます）
   REMINDER_HOUR: 18,          // リマインドを送る時刻（0〜23）。18 なら「前日の18時台」に送信
   REMINDER_DAYS_BEFORE: 1,    // 何日前に送るか（1 = 前日）
   SENDER_NAME: '福岡県倫理法人会 青年委員',
@@ -92,6 +92,7 @@ function doPost(e) {
       case 'cancelRsvp': return json_(removeRow_(SHEET.RSVPS, body.id, body.key));
       case 'message': return json_(addMessage_(body));
       case 'deleteMessage': return json_(removeRow_(SHEET.MESSAGES, body.id, body.key));
+      case 'adminUpsertEvent': return json_(adminUpsertEvent_(body));
       default: return json_({ ok: false, error: 'unknown_action' });
     }
   } finally {
@@ -175,6 +176,47 @@ function removeRow_(name, id, key) {
     }
   }
   return { ok: false, error: 'not_found' };
+}
+
+// ===== 運営用：予定の追加・変更（Claude Code から使う） =====
+// 管理用の合言葉（ADMIN_TOKEN）を知っている人だけが予定を追加・変更できます。
+// ページの利用者には使えません。予定の削除機能はありません。
+
+// 初回だけ実行：合言葉を作って保存し、実行ログに表示します
+function createAdminToken() {
+  const token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+  PropertiesService.getScriptProperties().setProperty('ADMIN_TOKEN', token);
+  Logger.log('管理用の合言葉（SEINEN_ADMIN_TOKEN に設定してください）: ' + token);
+}
+
+function isAdmin_(token) {
+  const saved = PropertiesService.getScriptProperties().getProperty('ADMIN_TOKEN');
+  return !!saved && !!token && String(token) === saved;
+}
+
+function adminUpsertEvent_(b) {
+  if (!isAdmin_(b.token)) return { ok: false, error: 'forbidden' };
+  const e = b.event || {};
+  const date = normDate_(e.date), unit = str_(e.unit);
+  if (!date || !unit) return { ok: false, error: 'need_date_and_unit' };
+  const speakers = Array.isArray(e.speakers)
+    ? e.speakers.map(x => str_(x.name) + (str_(x.title) ? '｜' + str_(x.title) : '')).filter(Boolean).join('\n')
+    : str_(e.speakers);
+  const sh = sheet_(SHEET.EVENTS);
+  let id = str_(e.id);
+  const row = [id, date, normTime_(e.time), unit, str_(e.venue), str_(e.address), str_(e.notice), speakers, str_(e.note)].map(v => safe_(String(v)));
+  const last = sh.getLastRow();
+  if (id && last >= 2) {
+    const ids = sh.getRange(2, 1, last - 1, 1).getValues().map(r => str_(r[0]));
+    const i = ids.indexOf(id);
+    if (i >= 0) {
+      sh.getRange(i + 2, 1, 1, row.length).setValues([row]);
+      return { ok: true, id, created: false };
+    }
+  }
+  if (!id) { id = date + '-' + Utilities.getUuid().slice(0, 6); row[0] = id; }
+  sh.appendRow(row);
+  return { ok: true, id, created: true };
 }
 
 // ===== リマインドメール =====

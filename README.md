@@ -13,6 +13,8 @@
 | `SETUP.md` | 初回の設定手順 |
 | `CHROME_PROMPT.md` | 設定作業を Claude in Chrome に任せるためのプロンプト（GAS 全文つき） |
 | `CHROME_RESUME_PROMPT.md` | 上の作業が途中で止まったときの再開用プロンプト |
+| `CHROME_UPDATE_PROMPT.md` | GAS を更新して、Claude Code から予定を書き込めるようにするプロンプト |
+| `scripts/sheet_admin.py` | Claude Code から予定を追加・変更する道具（環境変数 `SEINEN_ADMIN_TOKEN` を使用） |
 | `artifact/index.html` | 旧版（claude.ai 版。https://claude.ai/artifact/GCe64RuSzaueWQyv4hSy5C ） |
 
 データはすべて Google スプレッドシート（「予定」「参加者」「応援メッセージ」シート）に保存されます。
@@ -29,7 +31,7 @@
 
 ## 予定の更新
 スプレッドシートの「予定」シートを直接編集します（詳しくは `SETUP.md` の「ふだんの運用」）。
-Claude Code に依頼する場合は、追加したい予定の文章を渡すと「予定」シートに貼れる形に整えます。
+Claude Code に依頼する場合は、予定の文章を渡すとスプレッドシートに直接書き込みます（`CHROME_UPDATE_PROMPT.md` の設定が必要）。
 
 ## プライバシー
 - メールアドレスはスプレッドシートにだけ保存し、ページには返しません
