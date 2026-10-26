@@ -13,6 +13,7 @@ import datetime as dt, json, os, re, sys, urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGE_URL = "https://lc100068-cmd.github.io/seinen-ouen/"
 WD = "月火水木金土日"
+GREETING = "おはようございます！😊\n\nチーム応援から、今週のモーニングセミナーのご案内いたします🙌\n\n"  # 毎週の配信文の頭に付ける
 
 def api_url():
     src = open(os.path.join(ROOT, "config.js"), encoding="utf-8").read()
@@ -29,7 +30,7 @@ def build(start, evs, month=False):
         empty = "この月の予定はまだありません。"
     else:
         end = start + dt.timedelta(days=6)
-        head = f"【今週の倫理法人会 モーニングセミナー】\n{start.month}/{start.day}（{WD[start.weekday()]}）〜{end.month}/{end.day}（{WD[end.weekday()]}）"
+        head = GREETING + f"【今週の倫理法人会 モーニングセミナー】\n{start.month}/{start.day}（{WD[start.weekday()]}）〜{end.month}/{end.day}（{WD[end.weekday()]}）"
         empty = "今週の予定はありません。"
     week = [e for e in evs if start.isoformat() <= e["date"] <= end.isoformat()]
     if not week:
